@@ -31,7 +31,7 @@
                   v-model="item.check"
                   @change="item.check = $event"
                 ></v-checkbox>
-                <v-icon title="Editar" @click="edit(i)">mdi-pencil</v-icon>
+                <v-icon class="editar" title="Editar" @click="edit(i)">mdi-pencil</v-icon>
                 <v-switch
                   v-if="item.id_status == 1"
                   inset
@@ -156,5 +156,9 @@ export default {
 .actions {
   display: flex;
   flex-direction: row;
+}
+
+.editar {
+  margin-right: 13px;
 }
 </style>
