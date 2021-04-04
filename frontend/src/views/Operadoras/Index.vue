@@ -1,8 +1,11 @@
 <template>
   <v-container>
+    <c-delete :visualize="exclusao" @nao="exclusao = $event" @yes="deletar(null)" />
+    <c-toggle :visualize="alteracao" @nao="alteracao = $event" @sim="update(null)" />
     <div class="title">
       <h2>MANTER OPERADORA</h2>
     </div>
+    <v-alert v-if="alert" :type="alert.type">{{ alert.message }}</v-alert>
     <v-card>
       <v-container>
         <v-row>
@@ -40,9 +43,10 @@
           v-else
           :items="operadoras"
           :inativo="data.id_status"
+          @update="update($event)"
           @salvar="salvar($event)"
-          @toggle="toggle($event)"
-          @excluir="excluir($event)"
+          @toggle="update($event)"
+          @excluir="deletar($event)"
         />
       </v-container>
     </v-card>
@@ -58,44 +62,141 @@ export default {
       campos: {},
       data: {},
       loading: false,
+      exclusao: false,
+      alteracao: false,
+      item: null,
+      alert: null,
     };
   },
   async created() {
-    const result = await OperadorasServices.get();
-    this.loading = false;
-    this.operadoras = result.data.data.operadoras;
-    this.campos = result.data.data.campos;
+    this.showIndex();
+  },
+  watch: {
+    alert() {
+      setTimeout(() => {
+        this.alert = null;
+      }, 4000);
+    },
   },
   methods: {
+    update(item = null) {
+      if (item) {
+        this.item = item;
+        if (!this.alteracao) this.alteracao = true;
+        else this.alteracao = false;
+      } else if (item === null) {
+        if (!this.item.operadora) this.toggle(this.item);
+        else this.salvar(this.item);
+        this.item = null;
+        this.alteracao = false;
+      }
+    },
+
+    deletar(item = null) {
+      if (item) {
+        this.item = item;
+        if (!this.exclusao) this.exclusao = true;
+        else this.exclusao = false;
+        console.log("ashdas");
+      } else if (item === null) {
+        this.exclusao = false;
+        this.excluir(this.item);
+        this.item = null;
+      }
+    },
+
+    nao() {
+      this.item = null;
+      this.exclusao = null;
+      this.alteracao = null;
+      this.show();
+    },
+
+    async showIndex() {
+      const result = await OperadorasServices.get();
+      this.loading = false;
+      this.operadoras = result.data.data.operadoras;
+      this.campos = result.data.data.campos;
+    },
+
     async search() {
       const result = await OperadorasServices.search(this.data);
       this.operadoras = result.data;
     },
+
     async changeOperadora(event) {
       this.data.id = event;
       this.search();
     },
+
     async changeStatus(event) {
       this.data.id_status = event;
       this.search();
     },
+
     async salvar(item) {
-      var result;
       if (item.id) {
-        result = await OperadorasServices.update(item.id, item);
-        console.log(result);
+        await OperadorasServices.update(item.id, item)
+          .then((result) => {
+            this.checkResponse(result);
+            this.showIndex();
+          })
+          .catch((error) => {
+            this.checkResponse(error.response);
+          });
       } else {
-        result = await OperadoraServices.post(item);
-        console.log(result);
+        await OperadoraServices.post(item)
+          .then((result) => {
+            this.checkResponse(result);
+            this.showIndex();
+          })
+          .catch((error) => {
+            this.checkResponse(error.response);
+          });
       }
     },
+
     async excluir(item) {
-      var result;
-      result = await OperadoraServices.delete(item);
-      console.log(result);
+      var request = { operadoras: item };
+      await OperadoraServices.delete(request)
+        .then((result) => {
+          this.checkResponse(result);
+          this.showIndex();
+        })
+        .catch((error) => {
+          this.checkResponse(error.response);
+        });
+      this.showIndex();
     },
+
     async toggle(item) {
-      console.lof(item);
+      var request = { operadoras: item };
+      await OperadorasServices.toggle(request)
+        .then((result) => {
+          console.log(result);
+          this.checkResponse(result);
+          this.showIndex();
+        })
+        .catch((error) => {
+          this.checkResponse(error.response);
+        });
+    },
+
+    checkResponse(response) {
+      switch (response.status) {
+        case 200:
+          if (!response.data.message) response.data.message = "OK";
+          this.alert = {};
+          this.alert.message = response.data.message;
+          this.alert.type = "success";
+          break;
+
+        case 412:
+          this.alert = {};
+          this.alert.message = response.data.message;
+          this.alert.type = "error";
+          break;
+      }
     },
   },
 };

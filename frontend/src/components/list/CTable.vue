@@ -1,24 +1,22 @@
 <template>
   <div>
-    <div>
-      <btn-novo @novo="novo()"></btn-novo>
-    </div>
-    <div class="controls">
-      <v-checkbox
-        class="control"
-        v-model="check"
-        @change="checkall()"
-      ></v-checkbox>
-      Marcar Todos
-      <btn-excluir class="control" @excluir="actionSelected('excluir')" />
-      <btn-toggle class="control" @toggle="actionSelected('toggle')" />
-    </div>
+    <template v-if="inativo != 2">
+      <div>
+        <btn-novo @novo="novo()"></btn-novo>
+      </div>
+      <div class="controls">
+        <!-- <v-checkbox class="control" v-model="check" @change="checkall()"></v-checkbox>
+        Marcar Todos -->
+        <btn-excluir class="control" @excluir="actionSelected('excluir')" />
+        <btn-toggle class="control2" @toggle="actionSelected('toggle')" />
+      </div>
+    </template>
     <c-loading v-if="loading"></c-loading>
     <v-simple-table v-else>
       <template v-slot:default>
         <thead>
           <tr>
-            <td v-if="inativo != 2"></td>
+            <td v-if="inativo != 2" style="width: 100px"></td>
             <td>Operadora</td>
             <td>Descrição</td>
           </tr>
@@ -35,11 +33,12 @@
                 ></v-checkbox>
                 <v-icon title="Editar" @click="edit(i)">mdi-pencil</v-icon>
                 <v-switch
+                  v-if="item.id_status == 1"
                   inset
                   :false-value="2"
                   :true-value="1"
                   v-model="item.id_status"
-                  @change="$emit('salvar', item)"
+                  @change="$emit('update', item)"
                 ></v-switch>
               </td>
               <td>{{ item.no_operadora }}</td>
@@ -52,14 +51,12 @@
               </td>
               <td>
                 <c-text
-                  label="Operadora"
                   :value="item.no_operadora"
                   @change="item.no_operadora = $event"
                 ></c-text>
               </td>
               <td>
                 <c-text
-                  label="Descrição"
                   :value="item.de_operadora"
                   @change="item.de_operadora = $event"
                 ></c-text>
@@ -117,9 +114,8 @@ export default {
       let selected = [];
 
       this.data.map((item) => {
-        if (item.check === 1) selected.push(item);
+        if (item.check === 1) selected.push(item.id);
       });
-
       switch (param) {
         case "toggle":
           this.$emit("toggle", selected);
@@ -132,11 +128,11 @@ export default {
     checkall() {
       if (this.check)
         this.data.map((item) => {
-          item.check = 1;
+          item.id_status = 1;
         });
       else
         this.data.map((item) => {
-          item.check = 2;
+          item.id_status = 2;
         });
     },
   },
@@ -149,6 +145,11 @@ export default {
   align-items: center;
 }
 .control {
+  margin-top: 10px;
+}
+
+.control2 {
+  margin-top: 10px;
   margin-left: 18px;
 }
 

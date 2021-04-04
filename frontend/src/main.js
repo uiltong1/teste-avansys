@@ -13,6 +13,8 @@ import BtnOk from './components/buttons/BtnOk.vue'
 import BtnVoltar from './components/buttons/BtnVoltar.vue'
 import CTable from './components/list/CTable.vue'
 import CLoading from './components/form/CLoading.vue'
+import CDelete from './components/form/CDelete.vue'
+import CToggle from './components/form/CToggle.vue'
 
 Vue.component('CSelect', CSelect);
 Vue.component('CText', CText);
@@ -23,6 +25,8 @@ Vue.component('BtnOk', BtnOk);
 Vue.component('BtnVoltar', BtnVoltar);
 Vue.component('CTable', CTable);
 Vue.component('CLoading', CLoading);
+Vue.component('CDelete', CDelete);
+Vue.component('CToggle', CToggle);
 
 
 Vue.config.productionTip = false

@@ -2,8 +2,10 @@
 
 namespace App\Exceptions;
 
+use Dotenv\Exception\ValidationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException as ValidationValidationException;
+use Illuminate\Validation\Validator;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -33,7 +35,7 @@ class Handler extends ExceptionHandler
      * @param  \Throwable  $exception
      * @return void
      *
-     * @throws \Throwable
+     * @throws \Exception
      */
     public function report(Throwable $exception)
     {
@@ -51,12 +53,13 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        if ($request->is('api/*')) {
+        if($request->is('api/*')){
             $message = '';
-            if ($exception instanceof ValidationValidationException) {
-                foreach ($exception->errors() as $value) {
+            if($exception instanceof ValidationValidationException){
+                foreach ($exception->errors() as $value){
                     $message = $value[0];
                 }
+            //    return response()->json(['message'=> $message], 412);
                 abort(412, $message);
             }
         }

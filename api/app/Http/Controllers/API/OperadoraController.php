@@ -7,9 +7,9 @@ use App\Http\Requests\Requests\OperadoraRequest;
 use App\Http\Resources\OperadoraResource;
 use App\Models\Operadora;
 use App\Models\Status;
+use App\Services\Contracts\FieldsServices;
 use Exception;
 use Facade\FlareClient\Http\Response;
-use Illuminate\Contracts\Validation\Rule as ValidationRule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Test\Constraint\ResponseStatusCodeSame;
@@ -26,8 +26,8 @@ class OperadoraController extends Controller
         try {
             $response = array();
             $response['operadoras'] = Operadora::all();
-            $response['campos']['operadoras'] = Operadora::all();
-            $response['campos']['status'] = Status::all();
+            $response['campos']['operadoras'] = FieldsServices::getFieldOperadoras();
+            $response['campos']['status'] = FieldsServices::getFieldStatus();
             return (new OperadoraResource($response))->response()->setStatusCode(200);
         } catch (Exception $e) {
             return response()->json($e);
@@ -122,11 +122,12 @@ class OperadoraController extends Controller
      */
     public function destroy(Request $request)
     {
-        dd($request);
         try {
-            // $operadora = Operadora::find($id)->delete();
-            // if ($operadora)
-                return response()->json(new OperadoraResource(['message' => 'Operadora excluída com sucesso!']));
+            if (!empty($request->operadoras))
+                foreach ($request->operadoras as $value) {
+                    Operadora::where('id', $value)->delete();
+                }
+            return response()->json(new OperadoraResource(['message' => 'Operadora(s) excluída(s) com sucesso!']));
         } catch (Exception $e) {
             return response()->json($e);
         }
@@ -135,7 +136,8 @@ class OperadoraController extends Controller
     public function search(Request $request)
     {
         try {
-            $query = Operadora::join('status', 'operadoras.id_status', '=', 'status.id');
+            $query = Operadora::select('operadoras.id', 'operadoras.no_operadora', 'operadoras.de_operadora', 'operadoras.id_status')
+                ->join('status', 'operadoras.id_status', '=', 'status.id');
 
             if ($request->filled('id')) {
                 $query->where('operadoras.id', $request->id);
@@ -144,9 +146,32 @@ class OperadoraController extends Controller
             if ($request->filled('id_status')) {
                 $query->where('operadoras.id_status', $request->id_status);
             }
-
             $operadoras = $query->get();
             return response()->json(new OperadoraResource($operadoras));
+        } catch (Exception $e) {
+            return response()->json($e);
+        }
+    }
+
+    public function toggle(Request $request)
+    {
+        try {
+            if (!empty($request->operadoras)) {
+                foreach ($request->operadoras as $value) {
+                    $operadora = Operadora::where('id', $value)->get();
+                    $operadora = $operadora[0];
+                    if ($operadora->id_status == 1) {
+                        $operadora->id_status = 2;
+                        $operadora->save();
+
+                    } else {
+                        $operadora->id_status = 1;
+                        $operadora->save();
+
+                    }
+                }
+                return response()->json(new OperadoraResource(['message' => 'Status atualizado(s) com sucesso!']));
+            }
         } catch (Exception $e) {
             return response()->json($e);
         }

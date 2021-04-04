@@ -1,22 +1,22 @@
-import { http } from './config'
+import { http } from "./config";
 
 export default {
   get: () => {
-    return http.get('operadoras')
+    return http.get("operadoras");
   },
   post: (params) => {
-    return http.post('operadoras', params)
+    return http.post("operadoras", params);
   },
   update: (id, params) => {
-    return http.put(`operadoras/${id}`, params)
-  },
-  toggle: (param) => {
-    return http.put(`operadoras/${param}/toggle`)
+    return http.put(`operadoras/${id}`, params);
   },
   search: (params) => {
-    return http.get('operadoras_search', { params })
+    return http.get("operadoras_search", { params });
+  },
+  toggle: (params) => {
+    return http.patch("operadoras/toggle", params); 
   },
   delete: (params) => {
-    return http.delete(`operadoras`, { params })
-  }
-}
+    return http.patch("operadoras/delete", params); 
+  },
+};
