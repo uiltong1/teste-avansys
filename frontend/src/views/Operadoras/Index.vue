@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <c-delete :visualize="exclusao" @nao="exclusao = $event" @yes="deletar(null)" />
-    <c-toggle :visualize="alteracao" @nao="alteracao = $event" @sim="update(null)" />
+    <c-toggle :visualize="alteracao" @nao="nao()" @sim="update(null)" />
     <div class="title">
       <h2>MANTER OPERADORA</h2>
     </div>
@@ -97,7 +97,6 @@ export default {
         this.item = item;
         if (!this.exclusao) this.exclusao = true;
         else this.exclusao = false;
-        console.log("ashdas");
       } else if (item === null) {
         this.exclusao = false;
         this.excluir(this.item);
@@ -106,10 +105,12 @@ export default {
     },
 
     nao() {
+      if (this.item.no_operadora) {
+        this.showIndex();
+      }
       this.item = null;
       this.exclusao = null;
       this.alteracao = null;
-      this.show();
     },
 
     async showIndex() {
@@ -173,7 +174,6 @@ export default {
       var request = { operadoras: item };
       await OperadorasServices.toggle(request)
         .then((result) => {
-          console.log(result);
           this.checkResponse(result);
           this.showIndex();
         })
