@@ -16,7 +16,7 @@ class CreateOperadoras extends Migration
         Schema::create('operadoras', function (Blueprint $table) {
             $table->id();
             $table->string('no_operadora', 256)->unique();
-            $table->string('de_operadora', 256);
+            $table->string('de_operadora', 256)->nullable();
             $table->unsignedBigInteger('id_status')->nullable();
             $table->foreign('id_status')->references('id')->on('status')->onDelete('cascade');
             $table->timestamps();
