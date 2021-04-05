@@ -5,10 +5,10 @@
         <btn-novo @novo="novo()"></btn-novo>
       </div>
       <div class="controls">
-        <!-- <v-checkbox class="control" v-model="check" @change="checkall()"></v-checkbox>
-        Marcar Todos -->
+        <v-checkbox class="control" v-model="check" @change="checkall()"></v-checkbox>
+        Marcar Todos
         <btn-excluir class="control" @excluir="actionSelected('excluir')" />
-        <btn-toggle class="control2" @toggle="actionSelected('toggle')" />
+        <btn-toggle class="control" @toggle="actionSelected('toggle')" />
       </div>
     </template>
     <c-loading v-if="loading"></c-loading>
@@ -29,7 +29,7 @@
                   :false-value="2"
                   :true-value="1"
                   v-model="item.check"
-                  @change="item.check = $event"
+                  @change="checkin($event, i)"
                 ></v-checkbox>
                 <v-icon class="editar" title="Editar" @click="edit(i)">mdi-pencil</v-icon>
                 <v-switch
@@ -80,6 +80,7 @@ export default {
   watch: {
     items() {
       this.data = this.items;
+      this.check = false;
       this.data.map((item) => {
         item.check = 2;
         item.edit = false;
@@ -88,6 +89,28 @@ export default {
   },
   props: ["items", "inativo"],
   methods: {
+    checkin(event, i) {
+      this.data[i].check = event;
+
+      var cont = 0;
+      this.data.map((item) => {
+        if (item.check != event) cont += 1;
+      });
+
+      if (cont === 0) {
+        switch (event) {
+          case 1:
+            this.check = true;
+            break;
+          case 2:
+            this.check = false;
+            break;
+        }
+      } else {
+        this.check = false;
+      }
+      this.data = this.data.slice();
+    },
     edit(key) {
       this.loading = true;
       this.data[key].edit = true;
@@ -109,6 +132,7 @@ export default {
         id_status: 1,
         edit: true,
       });
+      this.data = this.data.slice();
     },
     actionSelected(param) {
       let selected = [];
@@ -126,14 +150,17 @@ export default {
       }
     },
     checkall() {
-      if (this.check)
+      if (this.check) {
         this.data.map((item) => {
-          item.id_status = 1;
+          item.check = 1;
         });
-      else
+        this.data = this.data.slice();
+      } else {
         this.data.map((item) => {
-          item.id_status = 2;
+          item.check = 2;
         });
+        this.data = this.data.slice();
+      }
     },
   },
 };
@@ -145,12 +172,8 @@ export default {
   align-items: center;
 }
 .control {
+  margin-left: 15px;
   margin-top: 10px;
-}
-
-.control2 {
-  margin-top: 10px;
-  margin-left: 18px;
 }
 
 .actions {
